@@ -9,31 +9,35 @@ start:
 	mov ss, ax
 	mov sp, 0x7C00 ;sets stack pointer, growing down away from the bootloader
 	sti ;enable interrupts
-	jmp display_msg
+
+	mov [boot_drive], dl
 	
-	jmp $ ;hang
+	mov si, dap
+	mov ah, 0x42
+	mov dl, [boot_drive]
+	int 0x13
+	jc err
+	
+	jmp 0x7E00 ;stage 2
+	;jmp $ ;hang
 
-display_msg:
+err:
 	mov ah, 0x0E ;teletype mode
-        mov al, 'G'
+        mov al, dl
         int 0x10
 
-        mov ah, 0x0E ;teletype mode
-        mov al, 'O'
-        int 0x10
-        mov ah, 0x0E ;teletype mode
-        mov al, 'O'
-        int 0x10
+	jmp $ ;hang because of the error
 
-        mov ah, 0x0E ;teletype mode
-        mov al, 'S'
-        int 0x10
+boot_drive:
+	db 0
 
-        mov ah, 0x0E ;teletype mode
-        mov al, 'E'
-        int 0x10
-
-	ret
+dap:
+	db 0x10 ;total size of DAP is 16 bytes
+	db 0x00 ; reserved as 0
+	dw 0x04; define word, number of sectors to read
+	dw 0x7E00 ;offset
+	dw 0x00 ;segment to load into
+	dq 0x01 ;LBA start sector
 
 times 510 - ($ - $$) db 0 ;essentially filling the remaing available bytes with 0s
 dw 0xAA55 ;boot signature for the BIOS to recognize
