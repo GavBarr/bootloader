@@ -9,12 +9,31 @@ start:
 	mov ss, ax
 	mov sp, 0x7C00 ;sets stack pointer, growing down away from the bootloader
 	sti ;enable interrupts
-
-	mov ah, 0x0E ;teletype mode
-	mov al, 'H'
-	int 0x10
-
+	jmp display_msg
+	
 	jmp $ ;hang
+
+display_msg:
+	mov ah, 0x0E ;teletype mode
+        mov al, 'G'
+        int 0x10
+
+        mov ah, 0x0E ;teletype mode
+        mov al, 'O'
+        int 0x10
+        mov ah, 0x0E ;teletype mode
+        mov al, 'O'
+        int 0x10
+
+        mov ah, 0x0E ;teletype mode
+        mov al, 'S'
+        int 0x10
+
+        mov ah, 0x0E ;teletype mode
+        mov al, 'E'
+        int 0x10
+
+	ret
 
 times 510 - ($ - $$) db 0 ;essentially filling the remaing available bytes with 0s
 dw 0xAA55 ;boot signature for the BIOS to recognize
